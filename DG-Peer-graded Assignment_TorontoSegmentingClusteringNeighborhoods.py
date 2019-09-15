@@ -99,4 +99,20 @@ df['Neighbourhood'] = np.where(df['Neighbourhood'] == 'Not assigned', df['Boroug
 dfResult = df.groupby(['Postcode', 'Borough'])['Neighbourhood'].apply(','.join).reset_index()
 print(dfResult.head(n=10))
 print(dfResult.shape)
+#%% [markdown]
+#
+# Now we are going to retrieve the coordinates of the different neighbouroods. 
+# For that, we will use the CSV file, as importing the geocoder library failed
+
+#%%
+
+fileName = 'Geospatial_coordinates.csv'
+coordinatesFile = pd.read_csv(fileName)
+coordinatesFile.head()
+
+#%%
+coordinatesFile.rename(columns={'Postal Code':'Postcode'}, inplace=True)
+dfWithCoordinates = dfResult.merge(coordinatesFile, on='Postcode')
+dfWithCoordinates.head()
+
 #%%
