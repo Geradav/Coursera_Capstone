@@ -115,4 +115,13 @@ coordinatesFile.rename(columns={'Postal Code':'Postcode'}, inplace=True)
 dfWithCoordinates = dfResult.merge(coordinatesFile, on='Postcode')
 dfWithCoordinates.head()
 
+#%% [markdown]
+
+# Now we can plot our data on a map. 
+# For that we will import the folium library.
+
+#%%
+import folium
+
+
 #%%
