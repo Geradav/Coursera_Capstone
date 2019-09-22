@@ -31,7 +31,7 @@ import numpy as np
 WebLink = "https://en.wikipedia.org/wiki/List_of_postal_codes_of_Canada:_M"
 WebPage = requests.get(WebLink)
 WebText = WebPage.text
-htmlContent = BeautifulSoup(WebText, 'lxml')
+htmlContent = BeautifulSoup(WebText)
 
 #%% [markdown]
 #
@@ -96,7 +96,7 @@ df.head()
 df.dropna(axis=0,inplace=True)
 df = df[df.Borough !='Not assigned']
 df['Neighbourhood'] = np.where(df['Neighbourhood'] == 'Not assigned', df['Borough'], df['Neighbourhood'])
-dfResult = df.groupby(['Postcode', 'Borough'])['Neighbourhood'].apply(','.join).reset_index()
+dfResult = df.groupby(['Postcode', 'Borough'])['Neighbourhood'].apply(', '.join).reset_index()
 print(dfResult.head(n=10))
 print(dfResult.shape)
 #%% [markdown]
@@ -110,18 +110,113 @@ fileName = 'Geospatial_coordinates.csv'
 coordinatesFile = pd.read_csv(fileName)
 coordinatesFile.head()
 
+#%% [markdown]
+# Let's rename the column 'Postal Code' of the imported file into 'Postcode' to match to other dataframe
+# We then merge both datasets together and we can do some analysis of our data.
+#
 #%%
 coordinatesFile.rename(columns={'Postal Code':'Postcode'}, inplace=True)
 dfWithCoordinates = dfResult.merge(coordinatesFile, on='Postcode')
-dfWithCoordinates.head()
+print('First five rows in the dataset')
+print(dfWithCoordinates.head())
+print('')
+print('Last 5 rows in the dataset')
+print(dfWithCoordinates.tail())
+print('')
+print('The dataset for Toronto contains {} borough and {} neighborough.'.format(len(set(dfWithCoordinates['Borough'])), dfWithCoordinates.shape[0]))
+
+#%%
+BoroughAnalysis = pd.DataFrame(data=dfWithCoordinates[['Borough', 'Neighbourhood']].groupby('Borough').count()).reset_index().rename(columns={'Borough': 'Name of borough', 'Neighbourhood': 'Number of neighbourhood'})
+NeighbourhoodAnalysis = dfWithCoordinates[['Borough', 'Neighbourhood']]
+NeighbourhoodAnalysis['Number of neighbourhood sharing the same postal code'] = NeighbourhoodAnalysis['Neighbourhood'].str.count(', ') + 1
+
+minBorough = BoroughAnalysis[BoroughAnalysis['Number of neighbourhood'] == BoroughAnalysis['Number of neighbourhood'].min()]
+maxBorough = BoroughAnalysis[BoroughAnalysis['Number of neighbourhood'] == BoroughAnalysis['Number of neighbourhood'].max()]
+moreThanOneNeighPerPC = NeighbourhoodAnalysis[NeighbourhoodAnalysis['Number of neighbourhood sharing the same postal code'] > 1]
+print('The dataset contains {} borough with only {} postal code.'.format(minBorough.shape[0], minBorough['Number of neighbourhood'].min()))
+print('')
+print(minBorough)
+print('')
+print('And the dataset contains {} borough with {} postal codes.'.format(maxBorough.shape[0], maxBorough['Number of neighbourhood'].max()))
+print('')
+print(maxBorough)
+print('')
+print('Also, {} postal codes are shared by several neighbourhoods, with up to {} neighbourhoods for 1 postal code.'.format(moreThanOneNeighPerPC.shape[0], moreThanOneNeighPerPC['Number of neighbourhood sharing the same postal code'].max()))
+#%%
 
 #%% [markdown]
 
 # Now we can plot our data on a map. 
-# For that we will import the folium library.
+# For that we will import the folium library. 
+# We will retrive the coordinates of the city of Toronto 
+# and we will display the map.
 
 #%%
+from geopy.geocoders import Nominatim
 import folium
+vToronto = Nominatim(user_agent="TorontoGeoLoc")
+TorontoLoc = vToronto.geocode("Toronto, Canada")
+TorontoCoordinates = [TorontoLoc.latitude, TorontoLoc.longitude]
+TorontoMap = folium.Map(location= TorontoCoordinates, zoom_start=10)
+TorontoMap
 
+#%% [markdown]
+# 
+# Let's first plot all points on the map
 
 #%%
+TorontoMap = folium.Map(location= TorontoCoordinates, zoom_start=10)
+
+
+for T_lat, T_lng, T_borough, T_neighbourhood in zip(dfWithCoordinates['Latitude'], dfWithCoordinates['Longitude'], dfWithCoordinates['Borough'], dfWithCoordinates['Neighbourhood']):
+    label = '{}, {}'.format(T_neighbourhood, '(' + T_borough + ')')
+    label = folium.Popup(label, parse_html=True)
+    folium.CircleMarker(
+        [T_lat, T_lng],
+        radius=5,
+        popup=label,
+        color='blue',
+        fill=True,
+        fill_color='blue',
+        fill_opacity=0.7,
+        parse_html=False).add_to(TorontoMap)
+
+TorontoMap
+
+#%% [markdown]
+#
+# Let's now give a different color to each borough
+#
+
+#%%
+import randomcolor as randcol
+
+# Retrieve unique values in the Borough field
+BoroughUL = set(dfWithCoordinates['Borough'])
+
+# Reset the map
+TorontoMap = folium.Map(location= TorontoCoordinates, zoom_start=10)
+
+# Loop through each unique borough, attribute a random color 
+# and create a feature group for each borough and add them to a layer
+for eachBorough1 in sorted(BoroughUL):
+    labelColor1 = randcol.RandomColor().generate()[0]
+    Borough_N = dfWithCoordinates[dfWithCoordinates['Borough'] == eachBorough1]
+    newFeatGrp = folium.FeatureGroup(name= eachBorough1)
+    for T_lat, T_lng, T_borough, T_neighbourhood in zip(Borough_N['Latitude'], Borough_N['Longitude'], Borough_N['Borough'], Borough_N['Neighbourhood']):
+        label = '{}, {}'.format(T_neighbourhood, '(' + T_borough + ')')
+        label = folium.Popup(label, parse_html=True)
+        folium.CircleMarker(
+            [T_lat, T_lng],
+            radius=5,
+            popup=label,
+            color=labelColor1,
+            fill=True,
+            fill_color=labelColor1,
+            fill_opacity=0.7,
+            parse_html=False).add_to(newFeatGrp)
+        newFeatGrp.add_to(TorontoMap)
+
+folium.LayerControl().add_to(TorontoMap)
+TorontoMap
+
