@@ -164,15 +164,16 @@ print('Coordinates: ', UgLoc, '\n\nLatitude: ', UgLat, '\n\nLongituted: ', UgLon
 #%%
 # import GeoJson
 UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
-GeoJSON_UG = 'Ug_Acholi.geojson'
+GeoJSON_Abim = 'Abim.geojson'
 
 # folium.GeoJson(GeoJSON_UG).add_to(UgMap)
+Acholi = folium.FeatureGroup(name='Acholi')
 folium.Choropleth(
-    geo_data=GeoJSON_UG
-).add_to(UgMap)
-folium.LayerControl().add_to(UgMap)
+    geo_data=GeoJSON_Abim
+).add_to(Acholi)
+Acholi.add_to(UgMap)
+folium.LayerControl().add_to(UgMap, name='Ug layer')
 
-UgMap.save('ugmap.html')
 UgMap
 
 #%%
