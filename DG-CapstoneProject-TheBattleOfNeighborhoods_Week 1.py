@@ -3,7 +3,15 @@
 #  ***David Gerard***  
 #   
 #   
-# I propose to work with the data Uganda.
+# In Uganda, an organization is trying to develop modern solutions using the Internet and connected devices. 
+# There is a lot to do and for a start, we would like to know a bit better the proportion of the population 
+# that has a mobile phone, has a computer, and access to the Internet. We also want to learn about their 
+# online activities and habits so that we can refine our understanding of the market and better concentrate 
+# our efforts around our offers, and our marketing strategy.
+# First, we will download and process some data available online about ownership of the computer, mobile 
+# phones, and access to the Internet. Then, we will try and plot those data on a map to better visualize where 
+# those users are concentrated. We will concentrate around the central region as we want to be close to our 
+# operation HQ and minimize costs.
 #
 # First we are going to review some available data about Uganda.  
 # 
