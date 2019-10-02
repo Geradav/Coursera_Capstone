@@ -15,7 +15,7 @@
 #
 # First we are going to review some available data about Uganda.  
 # 
-# Then we will concentrate on the Central region and Kampala for FourSquare
+# Then we will concentrate on the Central region
 #
 # _____
 # _____
@@ -636,6 +636,6 @@ UgMap
 # is where the population has a higher ownership of computer and mobilephones, and higher access to Internet.
 # In dark grey or black are the district for which there was no data  
 # 
-# For the FourSquare process we will concentrate on Kampala city.
+
 
 #%%
