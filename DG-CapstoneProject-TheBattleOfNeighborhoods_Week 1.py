@@ -1,9 +1,16 @@
 #%% [markdown]
+# # Capston Week 1
+#  ***David Gerard***  
+#   
+#   
+# I propose to work with the data Uganda.
 #
-# I propose to work with the data of the city of Kampala, Uganda.
+# First we are going to review some available data about Uganda.  
+# 
+# Then we will concentrate on the Central region and Kampala for FourSquare
 #
-# First we are going to review some available data about Uganda.
-
+# _____
+# _____
 #%%
 # Importing all required libraries
 import numpy as np
@@ -11,6 +18,12 @@ import pandas as pd
 import folium
 
 print('Done importing the required modules!')
+
+#%% [markdown]
+# 
+# After importing all necessary libraries, we access the files online and pass them to a Pandas DataFrame.
+# 
+# _____
 
 #%%
 # Accessing the data files
@@ -26,10 +39,22 @@ print('Population with access to Internet.\n', df_PopInternet.head(), '\n')
 print('Population with access to a computer.\n', df_PopComputer.head(), '\n')
 print('Population with access to a mobile phone.\n', df_PopMobilePhone.head(), '\n')
 print('Population size.\n', df_PopSize.head())
+
 #%% [markdown]
 #
-# We can see that the data needs some manipulation, some cleansing.
+# We can see that the data needs some manipulation, some cleansing.  
+# The Region is in the same column as the district.  
+# We are going to extract it and create a column Region for each record.  
+# We are going to rename the headers.  
+# And then we will delete rows for which the Total is NaN
+# _____
 #
+
+#%% [markdown]
+# 
+# ## Internet dataset preparation
+# _____
+
 #%%
 df_PopInternet.reset_index(drop=True, inplace=True)
 
@@ -45,27 +70,59 @@ for I, central, total in zip(df_PopInternet.index, df_PopInternet['Central'], df
         else:
             RegionCol.append(varRegion)
 df_PopInternet['Region'] = RegionCol
-print(df_PopInternet.head(), '\n')
 
 # Let's rename the 'Central' column in 'District'
-df_PopInternet.rename(columns={'Central':'District'}, inplace=True)
+df_PopInternet.rename(
+    columns={'Central':'District'},
+    inplace=True
+)
+
 # Let's keep Uganda country data separately from the district data
 Uganda_Internet = df_PopInternet[df_PopInternet['District'] == 'Uganda'].drop(columns=['Region'])
-df_PopInternet.dropna(subset=['Total'], inplace=True)
-df_PopInternet.drop(index=df_PopInternet[df_PopInternet['District'] == 'Uganda'].index, inplace=True)
-print(Uganda_Internet, '\n\n', df_PopInternet.head(5), '\n\n', df_PopInternet.tail())
+df_PopInternet.dropna(
+    subset=['Total'],
+    inplace=True
+)
+df_PopInternet.drop(
+    index=df_PopInternet[df_PopInternet['District'] == 'Uganda'].index,
+    inplace=True
+)
 
+print(
+    Uganda_Internet,
+     '\n\n',
+      df_PopInternet.head(5),
+       '\n\n',
+        df_PopInternet.tail()
+)
+
+#%% [markdown]
+# 
+# ## Computer dataset preparation  
+# 
+# _____
+# 
 #%%
 
-df_PopComputer.rename(columns={'Unnamed: 0': 'District', 'Male':'Male Headed Households', 'Female': 'Female Headed Households'}, inplace=True)
+df_PopComputer.rename(
+    columns={
+        'Unnamed: 0': 'District',
+         'Male':'Male Headed Households',
+          'Female': 'Female Headed Households'
+    },
+     inplace=True
+)
 df_PopComputer.drop(index=[0,1], inplace=True)
 df_PopComputer.head()
 
-#%%
 df_PopComputer.reset_index(drop=True, inplace=True)
 
 RegionCol2 = []
-for I, district, total in zip(df_PopComputer.index, df_PopComputer['District'], df_PopComputer['Total']):
+for I, district, total in zip(
+    df_PopComputer.index,
+     df_PopComputer['District'],
+      df_PopComputer['Total']
+    ):
     if I == 0:
         varRegion2 = 'Central'
         RegionCol2.append(varRegion2)
@@ -80,18 +137,45 @@ df_PopComputer['Region'] = RegionCol2
 
 # Let's keep Uganda country data separately from the district data
 Uganda_Computer = df_PopComputer[df_PopComputer['District'] == 'Uganda'].drop(columns=['Region'])
-df_PopComputer.dropna(subset=['Total'], inplace=True)
-df_PopComputer.drop(index=df_PopComputer[df_PopComputer['District'] == 'Uganda'].index, inplace=True)
+df_PopComputer.dropna(
+    subset=['Total'],
+     inplace=True
+)
+df_PopComputer.drop(
+    index=df_PopComputer[df_PopComputer['District'] == 'Uganda'].index,
+     inplace=True
+)
 
-print('Head view of the data (Computer):\n\n', df_PopComputer.head(), '\n\n\nTail view of hte data (computer):\n\n', df_PopComputer.tail(), '\n')
+print(
+    'Head view of the data (Computer):\n\n',
+     df_PopComputer.head(),
+      '\n\n\nTail view of the data (computer):\n\n',
+       df_PopComputer.tail(),
+        '\n'
+)
 
+#%% [markdown]
+# 
+# ## MobilePhone dataset preparation  
+# 
+# _____
 #%%
 # Let's first rename the 'Region' column in 'District'
-df_PopMobilePhone.rename(columns={'Region': 'District'}, inplace=True)
-df_PopMobilePhone.reset_index(drop=True, inplace=True)
+df_PopMobilePhone.rename(
+    columns={'Region': 'District'},
+    inplace=True
+)
+df_PopMobilePhone.reset_index(
+    drop=True,
+     inplace=True
+)
 
 RegionCol3 = []
-for I, district, total in zip(df_PopMobilePhone.index, df_PopMobilePhone['District'], df_PopMobilePhone['Total']):
+for I, district, total in zip(
+    df_PopMobilePhone.index,
+     df_PopMobilePhone['District'],
+      df_PopMobilePhone['Total']
+    ):
     if I == 0:
         varRegion3 = 'Central'
         RegionCol3.append(varRegion3)
@@ -105,31 +189,78 @@ df_PopMobilePhone['Region'] = RegionCol3
 
 # Let's keep Uganda country data separately from the district data
 Uganda_MobilePhone = df_PopMobilePhone[df_PopMobilePhone['District'] == 'Uganda'].drop(columns=['Region'])
-df_PopMobilePhone.dropna(subset=['Total'], inplace=True)
-df_PopMobilePhone.drop(index=df_PopMobilePhone[df_PopMobilePhone['District'] == 'Uganda'].index, inplace=True)
+df_PopMobilePhone.dropna(
+    subset=['Total'],
+     inplace=True
+)
+df_PopMobilePhone.drop(
+    index=df_PopMobilePhone[df_PopMobilePhone['District'] == 'Uganda'].index,
+    inplace=True
+)
 
-print('Head view of the data (MobilePhone):\n\n', df_PopMobilePhone.head(), '\n\n\nTail view of the data (MobilePhone):\n\n', df_PopMobilePhone.tail(), '\n')
+print(
+    'Head view of the data (MobilePhone):\n\n',
+     df_PopMobilePhone.head(),
+      '\n\n\nTail view of the data (MobilePhone):\n\n',
+       df_PopMobilePhone.tail(),
+        '\n'
+)
+
+#%% [markdown]
+#  
+# Let's review the shape of each dataframe for the three datasets we have processed so far
 
 #%%
-print('Computer dataframe shape:\n\n', df_PopComputer.shape, '\n\n\nInternet dataframe shape:\n\n', df_PopInternet.shape, '\n\n\nMobile phone dataframe shape:\n\n', df_PopMobilePhone.shape)
+
+print(
+    'Computer dataframe shape:\n\n',
+    df_PopComputer.shape,
+    '\n\n\nInternet dataframe shape:\n\n',
+    df_PopInternet.shape,
+    '\n\n\nMobile phone dataframe shape:\n\n',
+    df_PopMobilePhone.shape
+)
+#%% [markdown]
+# 
+# ## Population dataset preparation  
+# 
+# _____
+# 
 
 #%%
 # Let's continue with the population dataset
 #
-df_PopSize.rename(columns={'Region': 'District', 'Unnamed: 1': 'Households', 'Household': 'Household population', 'Average':'Average household size', 'Female': 'Female Headed', 'Child': 'Child headed', 'Non Household': 'Non household population'}, inplace=True)
+df_PopSize.rename(
+    columns={
+        'Region': 'District',
+        'Unnamed: 1': 'Households',
+        'Household': 'Household population',
+        'Average':'Average household size',
+        'Female': 'Female Headed',
+        'Child': 'Child headed',
+        'Non Household': 'Non household population'
+    },
+     inplace=True
+)
 
 # Drop the first two rows
 df_PopSize.drop([0,1], inplace=True)
 df_PopSize.head()
 
-#%%
-df_PopSize.reset_index(drop=True, inplace=True)
+df_PopSize.reset_index(
+    drop=True,
+    inplace=True
+)
 
 df_PopSize['Households'] = pd.to_numeric(df_PopSize['Households'].str.replace(',', ''), errors='coerce')
 df_PopSize['Household population'] = pd.to_numeric(df_PopSize['Household population'].str.replace(',', ''), errors='coerce')
 
 RegionCol4 = []
-for I, district, household in zip(df_PopSize.index, df_PopSize['District'], df_PopSize['Households']):
+for I, district, household in zip(
+    df_PopSize.index,
+    df_PopSize['District'],
+    df_PopSize['Households']
+):
     if I == 0:
         varRegion4 = 'Central'
         RegionCol4.append(varRegion4)
@@ -145,11 +276,27 @@ df_PopSize['Region'] = RegionCol4
 Uganda_PopSize = df_PopSize[df_PopSize['District'] == 'UGANDA'].drop(columns=['Region'])
 Region_PopSize = df_PopSize[df_PopSize['District'] == 'Region']
 df_PopSize.dropna(subset=['Households'], inplace=True)
-df_PopSize.drop(index=df_PopSize[df_PopSize['District'] == 'UGANDA'].index, inplace=True)
-df_PopSize.drop(index=df_PopSize[df_PopSize['District'] == 'Region'].index, inplace=True )
+df_PopSize.drop(
+    index=df_PopSize[df_PopSize['District'] == 'UGANDA'].index,
+    inplace=True
+)
+df_PopSize.drop(
+    index=df_PopSize[df_PopSize['District'] == 'Region'].index,
+    inplace=True
+)
 
 print('Head view of the data (Population size):\n\n', df_PopSize.head(), '\n\n\nTail view of the data (Population size):\n\n', df_PopSize.tail(), '\n')
 
+#%% [markdown]
+# 
+# Now that we have the data ready we can work on the map
+# 
+
+#%% [markdown]
+# 
+# ## Map preparation  
+# 
+# _____
 
 #%%
 from geopy.geocoders import Nominatim
@@ -158,22 +305,329 @@ UgLoc = UgApp.geocode('Uganda',)
 UgLat = UgLoc.latitude
 UgLong = UgLoc.longitude
 
-print('Coordinates: ', UgLoc, '\n\nLatitude: ', UgLat, '\n\nLongituted: ', UgLong)
+print('Coordinates of Uganda: ', UgLoc, '\n\nLatitude: ', UgLat, '\n\nLongituted: ', UgLong)
+
+#%% [markdown]
+# 
+# Let's see Uganda on a map
+#%%
+
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+UgMap
+
+#%% [markdown]
+# 
+# Now we are going to use a GeoJSON file to plot the districts on the map using Choropleth from Folium.
+# We are going to parse it to access its properties and mainly the subregion
+# 
+#%%
+GeoJSON_Ug = 'ugandadistricts.geojson'
+UgDict = open(GeoJSON_Ug).read()
+
+import json
+Ug_Gjson_Data = json.loads(open(GeoJSON_Ug).read())
+
+#%% [markdown]
+# 
+# Now we can display our districts on a map with a choropleth layer
+#  and visualize the different datasets we have prepared.
+# We will concentrate on the subregions Central 1 and Central 2
+#
+#%% [markdown]
+# 
+# ## Population dataset - Map visualisation  
+# 
+# _____
+# _____
+#%% [markdown]
+# 
+# ### Central 1
+# _____
+
+#%%
+
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    fg_acholi = folium.FeatureGroup(
+            name='Acholi', show= False
+        ) if not fg_acholi == True else None
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 1':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopSize,
+    columns=['District', 'Households'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# ### Central 2 
+# _____
+#%%
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 2':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopSize,
+    columns=['District', 'Households'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# ## Computer dataset
+# 
+# _____
+# _____
+
+#%% [markdown]
+# 
+# ### Central 1
+# _____
+
+#%%
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 1':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopComputer,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# ### Central 2
+# _____
+# 
+#%%
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 2':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopComputer,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%%[markdown]
+# 
+# ## Internet dataset
+# 
+# _____
+# _____
+
+#%% [markdown]
+# 
+# ### Central 1
+# _____
+# 
+#%%
+
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 1':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopInternet,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# ### Central 2
+# _____
+
+#%%
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 2':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopInternet,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# ## MobilePhone dataset
+# 
+# _____
+# _____
+
+#%% [markdown]
+# 
+# ### Central 1
+# _____
 
 
 #%%
-# import GeoJson
-UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
-GeoJSON_Abim = 'Abim.geojson'
 
-# folium.GeoJson(GeoJSON_UG).add_to(UgMap)
-Acholi = folium.FeatureGroup(name='Acholi')
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 1':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
 folium.Choropleth(
-    geo_data=GeoJSON_Abim
-).add_to(Acholi)
-Acholi.add_to(UgMap)
-folium.LayerControl().add_to(UgMap, name='Ug layer')
+    geo_data=geoFile,
+    data=df_PopMobilePhone,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
 
 UgMap
+
+#%% [markdown]
+# 
+# ### Central 2
+# _____
+
+#%%
+UgMap = folium.Map(location=[UgLat, UgLong], zoom_start=7)
+
+jsonString = '{\"type\": \"FeatureCollection\",\"features\": []}'
+fg_acholi = None
+geojsonFile = json.loads(jsonString)
+for i in range(len(Ug_Gjson_Data['features'])):
+    if Ug_Gjson_Data['features'][i]['properties']['Subregion'] == 'CENTRAL 2':
+        geojsonFile['features'].append(Ug_Gjson_Data['features'][i])
+    else:
+        pass
+
+geoFile = json.dumps(geojsonFile)
+folium.Choropleth(
+    geo_data=geoFile,
+    data=df_PopMobilePhone,
+    columns=['District', 'Total'],
+    key_on='feature.properties.District',
+    fill_color='YlGn',
+    popup='cool',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Number of households per district'
+).add_to(UgMap)
+
+UgMap
+
+#%% [markdown]
+# 
+# We can see from the different maps that the Central 1 subregion and more in particular Kampala (the capital) 
+# is where the population has a higher ownership of computer and mobilephones, and higher access to Internet.
+# In dark grey or black are the district for which there was no data  
+# 
+# For the FourSquare process we will concentrate on Kampala city.
 
 #%%
